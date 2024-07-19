@@ -108,6 +108,21 @@ export function autoUpdatingRelativeAge(date, options) {
   if (options.prefix) {
     prefix = options.prefix + " ";
   }
+// Change format for outside posts
+
+  if(format ==="hell"){
+    return (
+      "<span class='relative-date" +
+      append +
+      "' data-time='" +
+      date.getTime() +
+      "' data-format='" +
+      format +
+      "'>" +
+      longDate(date) +
+      "</span>"
+    );
+  }
 
   return (
     "<span class='relative-date" +

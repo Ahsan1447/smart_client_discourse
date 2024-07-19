@@ -11,14 +11,27 @@ import I18n from "discourse-i18n";
 export default class CategoryList extends ArrayProxy {
   static categoriesFrom(store, result, parentCategory = null) {
     // Find the period that is most relevant
-    const statPeriod =
-      ["week", "month"].find(
-        (period) =>
-          result.category_list.categories.filter(
-            (c) => c[`topics_${period}`] > 0
-          ).length >=
-          result.category_list.categories.length * 0.66
-      ) || "all";
+    let statPeriod;
+
+    if (Discourse.SiteSettings.enable_admin_settings) {
+      statPeriod =
+        ["week", "month"].find(
+          (period) =>
+            result.category_list.categories.filter(
+              (c) => c[`topics_${period}`] > 0
+            ).length >= result.category_list.categories.length * 0.66
+        ) || "all";
+
+      result.category_list.categories.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      statPeriod =
+        ["week", "month"].find(
+          (period) =>
+            result.category_list.categories.filter(
+              (c) => c[`topics_${period}`] > 0
+            ).length >= result.category_list.categories.length * 0.66
+        ) || "all";
+    }
 
     // Update global category list to make sure that `findById` works as
     // expected later

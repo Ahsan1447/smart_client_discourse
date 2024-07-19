@@ -1,5 +1,6 @@
 import { h } from "virtual-dom";
 import { longDate, number, relativeAge } from "discourse/lib/formatter";
+import Discourse from "discourse/app";
 
 export function dateNode(dt) {
   if (typeof dt === "string") {
@@ -12,7 +13,13 @@ export function dateNode(dt) {
       "data-format": "tiny",
     };
 
-    return h("span.relative-date", { attributes }, relativeAge(dt));
+    if (Discourse.SiteSettings.enable_admin_settings) {
+      return h("span.relative-date", { attributes }, longDate(dt));
+    }
+    else {
+      return h("span.relative-date", { attributes }, relativeAge(dt));
+
+    }
   }
 }
 

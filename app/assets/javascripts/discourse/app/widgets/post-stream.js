@@ -193,7 +193,13 @@ export default createWidget("post-stream", {
 
   html(attrs) {
     const posts = attrs.posts || [];
-    const postArray = posts.toArray();
+    let postArray;
+
+    if (Discourse.SiteSettings.enable_admin_settings) {
+      postArray = posts.toArray().reverse();
+    } else {
+      postArray = posts.toArray();
+    }
     const postArrayLength = postArray.length;
     const maxPostNumber =
       postArrayLength > 0 ? postArray[postArrayLength - 1].post_number : 0;
