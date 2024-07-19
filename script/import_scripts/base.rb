@@ -332,8 +332,10 @@ class ImportScripts::Base
     end
 
     if !EmailAddressValidator.valid_value?(opts[:email])
+      original_email = opts[:email]
       opts[:email] = fake_email
-      puts "Invalid email '#{original_email}' for '#{opts[:username]}'. Using '#{opts[:email]}'"
+      puts "Invalid email '#{original_email}' for '#{opts[:username]}'. Skipping user."
+      return nil
     end
 
     opts[:name] = original_username if original_name.blank? && opts[:username] != original_username
@@ -387,7 +389,8 @@ class ImportScripts::Base
       end
     end
 
-    if u.custom_fields["import_email"]
+    custom_fields = u&.custom_fields
+    if custom_fields && custom_fields["import_email"]
       u.suspended_at = Time.zone.at(Time.now)
       u.suspended_till = 200.years.from_now
       u.save!
@@ -409,7 +412,7 @@ class ImportScripts::Base
       end
     end
 
-    post_create_action.try(:call, u) if u.persisted?
+    post_create_action.try(:call, u) if u&.persisted?
 
     u # If there was an error creating the user, u.errors has the messages
   end
