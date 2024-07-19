@@ -11,12 +11,12 @@ class ImportScripts::VBulletin < ImportScripts::Base
 
   # override these using environment vars
 
-  URL_PREFIX ||= ENV["URL_PREFIX"] || "forum/"
-  DB_PREFIX ||= ENV["DB_PREFIX"] || "vb_"
+  URL_PREFIX ||= ENV["URL_PREFIX"] || ""
+  DB_PREFIX ||= ENV["DB_PREFIX"] || ""
   DB_HOST ||= ENV["DB_HOST"] || "localhost"
-  DB_NAME ||= ENV["DB_NAME"] || "vbulletin"
-  DB_PASS ||= ENV["DB_PASS"] || "password"
-  DB_USER ||= ENV["DB_USER"] || "username"
+  DB_NAME ||= ENV["DB_NAME"] || "forums"
+  DB_PASS ||= ENV["DB_PASS"] || "Admin@123"
+  DB_USER ||= ENV["DB_USER"] || "root"
   ATTACH_DIR ||= ENV["ATTACH_DIR"] || "/home/discourse/vbulletin/attach"
   AVATAR_DIR ||= ENV["AVATAR_DIR"] || "/home/discourse/vbulletin/avatars"
 
@@ -99,6 +99,10 @@ class ImportScripts::VBulletin < ImportScripts::Base
 
       create_users(users, total: user_count, offset: offset) do |user|
         username = @htmlentities.decode(user["username"]).strip
+        if username == 'redux'
+          user["email"] = 'alex@isomorphic.com'
+        end
+
         {
           id: user["userid"],
           name: username,
@@ -376,50 +380,33 @@ class ImportScripts::VBulletin < ImportScripts::Base
   def import_attachments
     puts "", "importing attachments..."
 
-    ext =
-      mysql_query("SELECT GROUP_CONCAT(DISTINCT(extension)) exts FROM #{DB_PREFIX}filedata").first[
-        "exts"
-      ].split(",")
-    SiteSetting.authorized_extensions =
-      (SiteSetting.authorized_extensions.split("|") + ext).uniq.join("|")
+    ext = mysql_query("SELECT GROUP_CONCAT(DISTINCT(extension)) exts FROM filedata").first["exts"].split(",")
+    SiteSetting.authorized_extensions = (SiteSetting.authorized_extensions.split("|") + ext).uniq.join("|")
 
     uploads = mysql_query <<-SQL
-    SELECT n.parentid nodeid, a.filename, fd.userid, LENGTH(fd.filedata) AS dbsize, filedata, fd.filedataid
-      FROM #{DB_PREFIX}attach a
-      LEFT JOIN #{DB_PREFIX}filedata fd ON fd.filedataid = a.filedataid
-      LEFT JOIN #{DB_PREFIX}node n on n.nodeid = a.nodeid
+      SELECT n.parentid nodeid, a.filename, fd.userid, LENGTH(fd.filedata) AS dbsize, filedata, fd.filedataid, fd.extension
+        FROM attach a
+        LEFT JOIN filedata fd ON fd.filedataid = a.filedataid
+        LEFT JOIN node n on n.nodeid = a.nodeid
     SQL
 
     current_count = 0
     total_count = uploads.count
 
     uploads.each do |upload|
-      post_id =
-        PostCustomField.where(name: "import_id").where(value: upload["nodeid"]).first&.post_id
-      post_id =
-        PostCustomField
-          .where(name: "import_id")
-          .where(value: "thread-#{upload["nodeid"]}")
-          .first
-          &.post_id unless post_id
+      post_id = PostCustomField.where(name: "import_id").where(value: upload["nodeid"]).first&.post_id
+      post_id = PostCustomField.where(name: "import_id").where(value: "thread-#{upload["nodeid"]}").first&.post_id unless post_id
       if post_id.nil?
         puts "Post for #{upload["nodeid"]} not found"
         next
       end
       post = Post.find(post_id)
 
-      filename =
-        File.join(
-          ATTACH_DIR,
-          upload["userid"].to_s.split("").join("/"),
-          "#{upload["filedataid"]}.attach",
-        )
+      filename = File.join(ATTACH_DIR, upload["userid"].to_s.split("").join("/"), "#{upload["filedataid"]}.attach")
       real_filename = upload["filename"]
       real_filename.prepend SecureRandom.hex if real_filename[0] == "."
 
       unless File.exist?(filename)
-        # attachments can be on filesystem or in database
-        # try to retrieve from database if the file did not exist on filesystem
         if upload["dbsize"].to_i == 0
           puts "Attachment file #{upload["filedataid"]} doesn't exist"
           next
@@ -428,23 +415,31 @@ class ImportScripts::VBulletin < ImportScripts::Base
         tmpfile = "attach_" + upload["filedataid"].to_s
         filename = File.join("/tmp/", tmpfile)
         File.open(filename, "wb") do |f|
-          #f.write(PG::Connection.unescape_bytea(row['filedata']))
           f.write(upload["filedata"])
         end
       end
 
-      upl_obj = create_upload(post.user.id, filename, real_filename)
-      if upl_obj&.persisted?
-        html = html_for_upload(upl_obj, real_filename)
-        if !post.raw[html]
-          post.raw += "\n\n#{html}\n\n"
-          post.save!
-          UploadReference.ensure_exist!(upload_ids: [upl_obj.id], target: post)
+      puts "Processing file: #{filename} (#{real_filename})"
+
+      begin
+        upl_obj = create_upload(post.user.id, filename, real_filename)
+
+        if upl_obj&.persisted?
+          html = html_for_upload(upl_obj, real_filename)
+          if !post.raw[html]
+            post.raw += "\n\n#{html}\n\n"
+            post.save!
+            UploadReference.ensure_exist!(upload_ids: [upl_obj.id], target: post)
+          end
+        else
+          puts "Failed to create upload for #{filename}: #{upl_obj.errors.full_messages.join(", ")}"
+          next
         end
-      else
-        puts "Fail"
-        exit
+      rescue => e
+        puts "Error processing file #{filename}: #{e.message}"
+        next
       end
+
       current_count += 1
       print_status(current_count, total_count)
     end
@@ -790,7 +785,7 @@ class ImportScripts::VBulletin < ImportScripts::Base
   end
 
   def parse_timestamp(timestamp)
-    Time.zone.at(@tz.utc_to_local(timestamp))
+    Time.zone.at(timestamp)
   end
 
   def mysql_query(sql)
