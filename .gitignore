@@ -48,6 +48,7 @@
 !/plugins/spoiler-alert
 !/plugins/checklist
 !/plugins/footnote
+!/plugins/post_creation_interceptor
 /plugins/*/auto_generated
 
 /spec/fixtures/plugins/my_plugin/auto_generated
