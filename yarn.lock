@@ -2682,7 +2682,15 @@
   resolved "https://registry.yarnpkg.com/@uppy/store-default/-/store-default-3.0.3.tgz#37d0e95c8fd360b3283bca7fdf94cce7400008e7"
   integrity sha512-/zlvQNj4HjkthI+7dNdj/8mOlTg1Zb1gJ/ZsOxof0g3xXD+OAwm7asRnOwpfj2dos+lExdW/zMn8XsRGsuvb6Q==
 
-"@uppy/utils@5.4.3", "@uppy/utils@^5.0.2", "@uppy/utils@^5.2.0", "@uppy/utils@^5.3.0", "@uppy/utils@^5.4.0":
+"@uppy/utils@6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-6.0.0.tgz#a59867318f4b387ca0e671399b957748a812c12e"
+  integrity sha512-24mvEYlt189setvd0z8l3LJRxiq+W8UAZ3lCHRP1Qzq6rSdd/cVaTiIgV+0ZvNnZMmiEKeKdEcfFG3VeGvE3dg==
+  dependencies:
+    lodash "^4.17.21"
+    preact "^10.5.13"
+
+"@uppy/utils@^5.0.2", "@uppy/utils@^5.2.0", "@uppy/utils@^5.3.0", "@uppy/utils@^5.4.0":
   version "5.4.3"
   resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-5.4.3.tgz#5d8c238805a35dec5b0d3cd4bea4e0a1b7e54584"
   integrity sha512-ewQTWQ5Wu1/ocz/lLCkhoXQwHLRktFK4CxrOsZmeCLK9LxjD1GOwSFjOuL199WDQKXiCle6SVlAJGQ3SDlXVkg==
