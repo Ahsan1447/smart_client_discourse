@@ -31,7 +31,7 @@
 
   <div class="user-stream-item__metadata">
     {{#if this.enableAdminSettings}}
-      <span class="time">{{format-date @item.created_at format="hell"}}</span>
+      <span class="time">{{format-date @item.created_at format="date_time_format"}}</span>
     {{else}}
       <span class="time">{{format-date @item.created_at}}</span>
     {{/if}}

@@ -5,6 +5,7 @@ export default {
   initialize() {
     withPluginApi("0.8.7", (api) => {
       api.modifyClass("controller:composer", {
+        pluginId: "post_creation_interceptor",
         save() {
           let title = this.get("model.title");
           let raw = this.get("model.reply");
