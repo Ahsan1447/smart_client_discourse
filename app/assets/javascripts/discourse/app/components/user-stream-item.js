@@ -36,4 +36,8 @@ export default Component.extend({
   userUrl(draftUsername, username) {
     return userPath((draftUsername || username).toLowerCase());
   },
+
+  enableAdminSettings: computed(function() {
+    return Discourse.SiteSettings.enable_admin_settings;
+  })
 });

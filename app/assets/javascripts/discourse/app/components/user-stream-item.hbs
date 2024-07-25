@@ -30,7 +30,11 @@
   {{/if}}
 
   <div class="user-stream-item__metadata">
-        <span class="time">{{format-date @item.created_at}}</span>
+    {{#if this.enableAdminSettings}}
+      <span class="time">{{format-date @item.created_at format="hell"}}</span>
+    {{else}}
+      <span class="time">{{format-date @item.created_at}}</span>
+    {{/if}}
 
     {{#if @item.deleted_by}}
       <span class="delete-info">

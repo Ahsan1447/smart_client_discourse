@@ -109,18 +109,12 @@ export function autoUpdatingRelativeAge(date, options) {
     prefix = options.prefix + " ";
   }
 // Change format for outside posts
-
-  if(format ==="hell"){
+  if (Discourse.SiteSettings.enable_admin_settings && format === "hell") {
+    console.log("new format");
     return (
-      "<span class='relative-date" +
-      append +
-      "' data-time='" +
-      date.getTime() +
-      "' data-format='" +
-      format +
-      "'>" +
-      longDate(date) +
-      "</span>"
+      `<span class='relative-date${append}' data-time='${date.getTime()}' data-format='${format}'>
+        ${longDate(date)}
+      </span>`
     );
   }
 
