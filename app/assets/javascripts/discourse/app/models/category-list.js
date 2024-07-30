@@ -10,37 +10,39 @@ import I18n from "discourse-i18n";
 
 export default class CategoryList extends ArrayProxy {
   static categoriesFrom(store, result, parentCategory = null) {
-    // Find the period that is most relevant
-    let statPeriod;
+	const { category_list: { categories: listCategories }, topic_list: { topics: topicList } } = result;
+	const excludeNames = ["Test Forum", "Staff", "General", "Community Support"];
+
+	// Filter out categories that should be excluded
+	const unlistedCategories = listCategories.filter(category => excludeNames.includes(category.name));
+	const listedCategories = listCategories.filter(category => !excludeNames.includes(category.name));
+
+	// Get the IDs of excluded categories
+	const excludedCategoryIds = new Set(unlistedCategories.map(category => category.id));
+
+	// Filter out topics that belong to excluded categories
+	result.topic_list.topics = topicList.filter(topic => !excludedCategoryIds.has(topic.category_id));
+
+	// Find the period that is most relevant
+    const statPeriod =
+        ["week", "month"].find(
+          (period) =>
+            listedCategories.filter(
+              (c) => c[`topics_${period}`] > 0
+            ).length >= listedCategories.length * 0.66
+        ) || "all";
 
     if (Discourse.SiteSettings.enable_admin_settings) {
-      statPeriod =
-        ["week", "month"].find(
-          (period) =>
-            result.category_list.categories.filter(
-              (c) => c[`topics_${period}`] > 0
-            ).length >= result.category_list.categories.length * 0.66
-        ) || "all";
-
-      result.category_list.categories.sort((a, b) => a.name.localeCompare(b.name));
-    } else {
-      statPeriod =
-        ["week", "month"].find(
-          (period) =>
-            result.category_list.categories.filter(
-              (c) => c[`topics_${period}`] > 0
-            ).length >= result.category_list.categories.length * 0.66
-        ) || "all";
+		listedCategories.sort((a, b) => a.name.localeCompare(b.name));
     }
-
     // Update global category list to make sure that `findById` works as
     // expected later
-    result.category_list.categories.forEach((c) =>
+    listedCategories.forEach((c) =>
       Site.current().updateCategory(c)
     );
 
     const categories = CategoryList.create({ store });
-    result.category_list.categories.forEach((c) => {
+    listedCategories.forEach((c) => {
       c = this._buildCategoryResult(c, statPeriod);
       if (
         (parentCategory && c.parent_category_id === parentCategory.id) ||
