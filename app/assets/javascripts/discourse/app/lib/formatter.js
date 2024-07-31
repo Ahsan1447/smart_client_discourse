@@ -365,6 +365,12 @@ export function relativeAge(date, options) {
 
   if (format === "tiny") {
     return relativeAgeTiny(date, options);
+  } else if (format === "date_time_format") {
+    return (
+      `<span class='relative-date' data-time='${date.getTime()}' data-format='${format}'>
+        ${longDate(date)}
+      </span>`
+    );
   } else if (format === "medium") {
     return relativeAgeMedium(date, options);
   } else if (format === "medium-with-ago") {

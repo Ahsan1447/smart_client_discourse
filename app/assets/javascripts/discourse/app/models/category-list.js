@@ -10,20 +10,30 @@ import I18n from "discourse-i18n";
 
 export default class CategoryList extends ArrayProxy {
   static categoriesFrom(store, result, parentCategory = null) {
-	const { category_list: { categories: listCategories }, topic_list: { topics: topicList } } = result;
-	const excludeNames = ["Test Forum", "Staff", "General", "Community Support"];
+    const { category_list: { categories: listCategories }, topic_list: { topics: topicList } } = result;
+    const excludeNames = ["Test Forum", "Staff", "General", "Community Support", "SmartClient Support"];
 
-	// Filter out categories that should be excluded
-	const unlistedCategories = listCategories.filter(category => excludeNames.includes(category.name));
-	const listedCategories = listCategories.filter(category => !excludeNames.includes(category.name));
+    let listedCategories = listCategories;
+    let filteredTopics = topicList;
 
-	// Get the IDs of excluded categories
-	const excludedCategoryIds = new Set(unlistedCategories.map(category => category.id));
+    if (Discourse.SiteSettings.enable_admin_settings) {
+      const unlistedCategories = listCategories.filter(category => excludeNames.includes(category.name));
+      listedCategories = listCategories.filter(category => !excludeNames.includes(category.name));
 
-	// Filter out topics that belong to excluded categories
-	result.topic_list.topics = topicList.filter(topic => !excludedCategoryIds.has(topic.category_id));
+      // Get the IDs of excluded categories
+      const excludedCategoryIds = new Set(unlistedCategories.map(category => category.id));
 
-	// Find the period that is most relevant
+      // Filter out topics that belong to excluded categories
+      filteredTopics = topicList.filter(topic => !excludedCategoryIds.has(topic.category_id));
+
+      // Sort categories by name if the setting is enabled
+      listedCategories.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    // Update the result's topic list with filtered topics
+    result.topic_list.topics = filteredTopics;
+
+    // Find the period that is most relevant
     const statPeriod =
         ["week", "month"].find(
           (period) =>
@@ -32,9 +42,6 @@ export default class CategoryList extends ArrayProxy {
             ).length >= listedCategories.length * 0.66
         ) || "all";
 
-    if (Discourse.SiteSettings.enable_admin_settings) {
-		listedCategories.sort((a, b) => a.name.localeCompare(b.name));
-    }
     // Update global category list to make sure that `findById` works as
     // expected later
     listedCategories.forEach((c) =>

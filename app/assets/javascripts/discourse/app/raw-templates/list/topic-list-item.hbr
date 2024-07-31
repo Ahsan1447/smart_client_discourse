@@ -21,6 +21,12 @@
     {{~raw-plugin-outlet name="topic-list-before-status"}}
     {{~raw "topic-status" topic=topic}}
     {{~topic-link topic class="raw-link raw-topic-link"}}
+    <span style='display: flex; font-size: medium; margin-top: 5px;'>
+    Started by: 
+    <a href="/u/{{ topic.featuredUsers.[0].user.username }}/summary">
+        {{ topic.featuredUsers.[0].user.username }}
+    </a>
+    </span>
     {{~#if topic.featured_link}}
       &nbsp;{{~topic-featured-link topic}}
     {{~/if}}
@@ -58,6 +64,10 @@
   {{raw "list/posters-column" posters=topic.featuredUsers}}
 {{/if}}
 
+<td class="posts topic-list-data">
+  <a href="/u/{{ topic.last_poster_username }}/summary">{{ topic.last_poster_username }}</a>
+</td>
+
 {{raw "list/posts-count-column" topic=topic}}
 
 {{#if showLikes}}
@@ -86,5 +96,6 @@
 </td>
 
 {{raw "list/activity-column" topic=topic class="num topic-list-data" tagName="td"}}
+
 
 {{~raw-plugin-outlet name="topic-list-after-columns"}}

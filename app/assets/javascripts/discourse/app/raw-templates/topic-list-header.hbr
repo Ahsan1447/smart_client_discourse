@@ -15,6 +15,7 @@
 {{#if showPosters}}
   {{raw "topic-list-header-column" name='posters' screenreaderOnly='true'}}
 {{/if}}
+{{raw "topic-list-header-column" sortable=sortable order='posts' name="" }}
 {{raw "topic-list-header-column" sortable=sortable number='true' order='posts' name='replies'}}
 {{#if showLikes}}
   {{raw "topic-list-header-column" sortable=sortable number='true' order='likes' name='likes'}}

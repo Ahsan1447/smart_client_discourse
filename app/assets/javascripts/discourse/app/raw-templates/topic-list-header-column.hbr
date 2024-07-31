@@ -25,7 +25,17 @@
     {{~#if view.showTopicsAndRepliesToggle}}
       {{raw "list/new-list-header-controls" current=newListSubset newRepliesCount=newRepliesCount newTopicsCount=newTopicsCount}}
     {{else}}
-      <span {{#if view.screenreaderOnly}}class="sr-only"{{/if}} {{#if sortable}}tabindex="0" role="button" aria-pressed='{{view.ariaPressed}}'{{/if}}>{{view.localizedName}}</span>
+      <span 
+        {{#if view.screenreaderOnly}}class="sr-only"{{/if}} 
+        {{#if sortable}}tabindex="0" role="button" aria-pressed="{{view.ariaPressed}}"{{/if}}
+      >
+        {{#if view.localizedName}}
+          {{view.localizedName}}
+        {{else}}
+          Last Post
+        {{/if}}
+      </span>
+
     {{/if ~}}
   {{/unless ~}}
   {{~#if view.isSorting}}
