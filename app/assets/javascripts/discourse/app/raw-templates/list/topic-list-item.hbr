@@ -25,7 +25,7 @@
       Started by&nbsp;
       <a href="/u/{{ topic.featuredUsers.[0].user.username }}/summary">
           {{ topic.featuredUsers.[0].user.username }}
-      </a>,
+      </a>,&nbsp;
       {{ format-date topic.created_at format="date_time" }}
     </span>
     {{~#if topic.featured_link}}
