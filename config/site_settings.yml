@@ -2300,7 +2300,7 @@ rate_limits:
 developer:
   force_hostname:
     hidden: true
-    default: "18.191.68.85:80"
+    default: "18.191.68.85"
   port:
     hidden: true
     default: ""
