@@ -11,7 +11,7 @@ import I18n from "discourse-i18n";
 export default class CategoryList extends ArrayProxy {
   static categoriesFrom(store, result, parentCategory = null) {
     const { category_list: { categories: listCategories }, topic_list: { topics: topicList } } = result;
-    const excludeNames = ["Test Forum", "Staff", "General", "Community Support", "SmartClient Support"];
+    const excludeNames = ["Test Forum", "Staff", "General", "Community Support", "SmartClient Support", "Site Feedback"];
 
     let listedCategories = listCategories;
     let filteredTopics = topicList;
@@ -27,7 +27,7 @@ export default class CategoryList extends ArrayProxy {
       filteredTopics = topicList.filter(topic => !excludedCategoryIds.has(topic.category_id));
 
       // Sort categories by name if the setting is enabled
-      listedCategories.sort((a, b) => a.name.localeCompare(b.name));
+      // listedCategories.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     // Update the result's topic list with filtered topics
