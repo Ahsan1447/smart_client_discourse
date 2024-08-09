@@ -37,6 +37,13 @@ export function longDate(dt) {
   return moment(dt).format(I18n.t("dates.long_with_year"));
 }
 
+export function dateTimeFormat(dt) {
+  if (!dt) {
+    return;
+  }
+  return moment(dt).format("DD MMM YYYY HH:mm");
+}
+
 // suppress year, if current year
 export function longDateNoYear(dt) {
   if (!dt) {
@@ -369,6 +376,12 @@ export function relativeAge(date, options) {
     return (
       `<span class='relative-date' data-time='${date.getTime()}' data-format='${format}'>
         ${longDate(date)}
+      </span>`
+    );
+  } else if (format === "date_time") {
+    return (
+      `<span class='relative-date' data-time='${date.getTime()}' data-format='${format}'>
+        ${dateTimeFormat(date)}
       </span>`
     );
   } else if (format === "medium") {

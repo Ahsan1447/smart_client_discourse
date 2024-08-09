@@ -22,10 +22,11 @@
     {{~raw "topic-status" topic=topic}}
     {{~topic-link topic class="raw-link raw-topic-link"}}
     <span style='display: flex; font-size: medium; margin-top: 5px;'>
-    Started by: 
-    <a href="/u/{{ topic.featuredUsers.[0].user.username }}/summary">
-        {{ topic.featuredUsers.[0].user.username }}
-    </a>
+      Started by&nbsp;
+      <a href="/u/{{ topic.featuredUsers.[0].user.username }}/summary">
+          {{ topic.featuredUsers.[0].user.username }}
+      </a>,
+      {{ format-date topic.created_at format="date_time" }}
     </span>
     {{~#if topic.featured_link}}
       &nbsp;{{~topic-featured-link topic}}
