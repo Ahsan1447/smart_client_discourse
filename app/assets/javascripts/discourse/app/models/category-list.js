@@ -28,6 +28,31 @@ export default class CategoryList extends ArrayProxy {
 
       // Sort categories by name if the setting is enabled
       // listedCategories.sort((a, b) => a.name.localeCompare(b.name));
+
+        const customOrder = [
+          "Installation",
+          "Smart GWT Technical Q&A",
+          "Technical Q&A",
+          "Wishlist",
+          "Addendums"
+      ];
+
+      listedCategories.sort((a, b) => {
+          const indexA = customOrder.indexOf(a.name);
+          const indexB = customOrder.indexOf(b.name);
+
+          if (indexA !== -1 && indexB !== -1) {
+              return indexA - indexB;
+          }
+          if (indexA !== -1) {
+              return -1;
+          }
+          if (indexB !== -1) {
+              return 1;
+          }
+          return a.name.localeCompare(b.name);
+      });
+
     }
 
     // Update the result's topic list with filtered topics
