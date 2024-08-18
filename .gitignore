@@ -5,7 +5,6 @@
 /tmp
 
 /.bundle
-/.env
 /.procfile
 /dump.rdb
 .DS_Store
@@ -82,3 +81,4 @@ openapi/*
 
 # Cached License Data Files
 /.licenses
+config.bat
