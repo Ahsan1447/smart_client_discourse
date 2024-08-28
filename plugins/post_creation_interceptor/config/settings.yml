@@ -2,25 +2,9 @@ plugins:
   enable_admin_settings:
     default: true
     client: true
-  Audio_Volume:
-    default: 10
+  custom_js_code:
+    type: string
+    textarea: true
+    default: ""
     client: true
-  Allowed_Groups:
-    type: group_list
-    list_type: compact
-    default: "1|2" # @admins, @moderators
-    mandatory_values: "1|2" # @admins, @moderators
-    allow_any: false
-    refresh: true
-  Emoji_Reactions:
-    type: emoji_list
-    default: tada
-    client: true
-  Fruits:
-    client: true
-    type: enum
-    default: Apple
-    choices:
-      - Apple
-      - Banana
-      - Orange
+    description: Enter your custom text here.

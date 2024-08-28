@@ -8,4 +8,14 @@
 
 enabled_site_setting :enable_admin_settings
 
-# register_asset "javascripts/discourse/post-creation-interceptor.js"
+# register_asset "javascripts/smartclient-eval-loader.js"
+
+after_initialize do
+    if SiteSetting.enable_admin_settings
+      
+      script = SiteSetting.custom_js_code
+      unless script.blank?
+        add_to_serializer(:site, :custom_js_code) { script }
+      end
+    end
+end

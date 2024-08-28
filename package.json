@@ -34,6 +34,7 @@
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^2.8.8",
     "puppeteer-core": "^22.13.0",
+    "smartclient-eval": "^0.9.22",
     "squoosh": "discourse/squoosh#dc9649d",
     "typescript": "^5.5.3"
   },
