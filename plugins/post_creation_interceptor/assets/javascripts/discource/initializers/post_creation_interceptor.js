@@ -7,9 +7,9 @@ export default {
     withPluginApi("0.8.7", (api) => {
 
       const customScriptContent = Discourse.SiteSettings.custom_js_code;
-      const enableAdminsettings = Discourse.SiteSettings.enable_admin_settings;
+      const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;
 
-      if(enableAdminsettings){
+      if (enableAdminSettings) {
 
         // Array of registered script paths relative to Discourse assets URL
         const scriptPaths = [
@@ -56,7 +56,7 @@ export default {
         loadScriptsSequentially(scriptPaths.slice(), () => {
 
           // Inject custom script content if settings allow after all scripts are loaded
-          if (customScriptContent && enableAdminsettings) {
+          if (customScriptContent && enableAdminSettings) {
             const scriptElement = document.createElement("script");
             scriptElement.type = "text/javascript";
             scriptElement.textContent = `(function() { ${customScriptContent} })();`;
@@ -67,12 +67,59 @@ export default {
               const nonce = existingScript.getAttribute("nonce");
               scriptElement.setAttribute("nonce", nonce);
             }
+
             document.head.appendChild(scriptElement);
           }
         });
 
+        // Adding the class name link replacement functionality
+
+        // Define a hash of class names and their corresponding links
+        const CLASS_NAME_LINKS = {
+          'ListGridRecord': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=object..ListGridRecord',
+          'GroupNode': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=object..GroupNode',
+          'HiliteRule': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..HiliteRule',
+          'ColumnTree': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..ColumnTree',
+          'HibernateBrowser': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..HibernateBrowser',
+          'SortSpecifier': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=object..SortSpecifier',
+          'WebService': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..WebService',
+          'Flashlet': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..Flashlet',
+          'TextSettings': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..TextSettings',
+          'ActiveXControl': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..ActiveXControl',
+          'ZoneCanvas': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..ZoneCanvas',
+          'Timeline': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..Timeline',
+          'Calendar': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..Calendar',
+          // Add more class names and links as needed
+        };
+
+        // Global regex pattern to match words that:
+        // - Start with a capital letter
+        // - Are surrounded by spaces or at the start/end of the text
+        const GLOBAL_CLASS_NAME_REGEX = /(^|\s)([A-Z][a-zA-Z0-9]*)(?=\s|$)/g;
+
+        function replaceWithLinks(text) {
+          return text.replace(GLOBAL_CLASS_NAME_REGEX, (match, p1, className) => {
+            // Check if the captured className exists in CLASS_NAME_LINKS
+            if (CLASS_NAME_LINKS.hasOwnProperty(className)) {
+              return `${p1}[${className}](${CLASS_NAME_LINKS[className]})`;
+            }
+            return match;
+          });
+        }
+
+        // Use Discourse's plugin API to modify the composer save behavior
+        api.modifyClass("controller:composer", {
+          save() {
+            const content = this.get("model.reply");
+            console.log("content coming...", content);
+            const modifiedContent = replaceWithLinks(content);
+            this.set("model.reply", modifiedContent);
+
+            this._super(...arguments);  // Call the original save function
+          }
+        });
       }
 
     });
   },
-}; 
+};
