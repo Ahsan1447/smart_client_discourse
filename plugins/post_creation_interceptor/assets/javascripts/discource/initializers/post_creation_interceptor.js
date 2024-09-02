@@ -53,7 +53,7 @@ export default {
         }
 
         // Load the registered scripts dynamically in sequence
-        loadScriptsSequentially(scriptPaths.slice(), () => {
+        loadScriptsSequentially(scriptPaths.slice(), () => {      
 
           // Inject custom script content if settings allow after all scripts are loaded
           if (customScriptContent && enableAdminSettings) {
@@ -69,34 +69,14 @@ export default {
             }
 
             document.head.appendChild(scriptElement);
+
+            if (typeof CLASS_NAME_LINKS === 'undefined' || typeof GLOBAL_CLASS_NAME_REGEX === 'undefined') {
+              return;
+            }
           }
         });
-
-        // Adding the class name link replacement functionality
-
-        // Define a hash of class names and their corresponding links
-        const CLASS_NAME_LINKS = {
-          'ListGridRecord': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=object..ListGridRecord',
-          'GroupNode': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=object..GroupNode',
-          'HiliteRule': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..HiliteRule',
-          'ColumnTree': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..ColumnTree',
-          'HibernateBrowser': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..HibernateBrowser',
-          'SortSpecifier': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=object..SortSpecifier',
-          'WebService': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..WebService',
-          'Flashlet': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..Flashlet',
-          'TextSettings': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..TextSettings',
-          'ActiveXControl': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..ActiveXControl',
-          'ZoneCanvas': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..ZoneCanvas',
-          'Timeline': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..Timeline',
-          'Calendar': 'https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=class..Calendar',
-          // Add more class names and links as needed
-        };
-
-        // Global regex pattern to match words that:
-        // - Start with a capital letter
-        // - Are surrounded by spaces or at the start/end of the text
-        const GLOBAL_CLASS_NAME_REGEX = /(^|\s)([A-Z][a-zA-Z0-9]*)(?=\s|$)/g;
-
+        
+ 
         function replaceWithLinks(text) {
           return text.replace(GLOBAL_CLASS_NAME_REGEX, (match, p1, className) => {
             // Check if the captured className exists in CLASS_NAME_LINKS
@@ -106,20 +86,20 @@ export default {
             return match;
           });
         }
-
-        // Use Discourse's plugin API to modify the composer save behavior
-        api.modifyClass("controller:composer", {
+         // Use Discourse's plugin API to modify the composer save behavior
+         api.modifyClass("controller:composer", {
           save() {
             const content = this.get("model.reply");
-            console.log("content coming...", content);
-            const modifiedContent = replaceWithLinks(content);
-            this.set("model.reply", modifiedContent);
+            if (typeof GLOBAL_CLASS_NAME_REGEX !== 'undefined' && typeof CLASS_NAME_LINKS !== 'undefined') {
 
+              const modifiedContent = replaceWithLinks(content);
+              this.set("model.reply", modifiedContent);
+            }
             this._super(...arguments);  // Call the original save function
           }
         });
-      }
 
+      }
     });
   },
 };
