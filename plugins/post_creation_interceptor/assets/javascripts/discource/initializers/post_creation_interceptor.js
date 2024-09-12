@@ -7,7 +7,41 @@ export default {
     withPluginApi("0.8.7", (api) => {
 
       const customScriptContent = Discourse.SiteSettings.custom_js_code;
-      const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;
+      const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;    
+
+      document.addEventListener("DOMContentLoaded", function() {
+        const menuHTML = `
+          <div class="custom-menu">
+              <a href="#">FORUMS</a>
+              <a href="https://smartclient.com/">HOME PAGE</a>
+              <a href="https://smartclient.com/technology/">OVERVIEW</a>
+              <a href="https://smartclient.com/product/overview.jsp">PRODUCT</a>
+              <a href="https://smartclient.com/services/">SERVICES</a>
+              <a href="https://smartclient.com/solutions/overview.jsp">SOLUTIONS</a>
+              <a href="https://smartclient.com/company/contact.jsp">CONTACT</a>
+              <a href="https://smartclient.com/company/">RIEFY</a>
+          </div>
+        `;
+        const closeButton = document.querySelector('.btn.btn-icon-text.close');
+        const popup = document.querySelector('.composer-popup');
+
+        if (closeButton) {
+          console.log('Close button found');
+          closeButton.addEventListener('click', function() {
+              console.log('Close button clicked');
+              if (popup) {
+                  popup.style.display = 'none';
+              }
+          });
+        } else {
+            console.log('Close button not found');
+        }
+
+        const targetElement = document.querySelector('.before-header-panel-outlet');
+        if (targetElement) {
+          targetElement.innerHTML += menuHTML;
+        }
+      });
 
       if (enableAdminSettings) {
 

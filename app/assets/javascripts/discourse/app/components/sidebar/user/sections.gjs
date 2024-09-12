@@ -2,6 +2,7 @@ import Component from "@glimmer/component";
 import { service } from "@ember/service";
 import ApiSections from "../api-sections";
 import CategoriesSection from "./categories-section";
+import MenuSections from "./menu-sections";
 import CustomSections from "./custom-sections";
 import MessagesSection from "./messages-section";
 import TagsSection from "./tags-section";
@@ -12,6 +13,7 @@ export default class SidebarUserSections extends Component {
   <template>
     <div class="sidebar-sections">
       <CustomSections @collapsable={{@collapsableSections}} />
+      <MenuSections @collapsable={{@collapsableSections}} />
       <CategoriesSection @collapsable={{@collapsableSections}} />
 
       {{#if this.currentUser.display_sidebar_tags}}
