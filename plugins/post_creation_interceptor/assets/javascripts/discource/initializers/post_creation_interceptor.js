@@ -22,20 +22,6 @@ export default {
               <a href="https://smartclient.com/company/">RIEFY</a>
           </div>
         `;
-        const closeButton = document.querySelector('.btn.btn-icon-text.close');
-        const popup = document.querySelector('.composer-popup');
-
-        if (closeButton) {
-          console.log('Close button found');
-          closeButton.addEventListener('click', function() {
-              console.log('Close button clicked');
-              if (popup) {
-                  popup.style.display = 'none';
-              }
-          });
-        } else {
-            console.log('Close button not found');
-        }
 
         const targetElement = document.querySelector('.before-header-panel-outlet');
         if (targetElement) {
