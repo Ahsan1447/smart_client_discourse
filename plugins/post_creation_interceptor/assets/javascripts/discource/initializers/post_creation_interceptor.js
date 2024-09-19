@@ -107,7 +107,7 @@ export default {
           });
         }
          // Use Discourse's plugin API to modify the composer save behavior
-         api.modifyClass("controller:composer", {
+        api.modifyClass("controller:composer", {
           save() {
             const content = this.get("model.reply");
             if (typeof GLOBAL_CLASS_NAME_REGEX !== 'undefined' && typeof CLASS_NAME_LINKS !== 'undefined') {
@@ -119,6 +119,27 @@ export default {
           }
         });
 
+        api.onPageChange((url) => {
+          const composerObserver = new MutationObserver(() => {
+            const categoryChooser = document.querySelector('.category-chooser');
+
+            if (categoryChooser) {
+              if (url.includes("/c/")) {
+                categoryChooser.style.pointerEvents = 'none';
+                categoryChooser.style.opacity = '0.5';
+              } else {
+                categoryChooser.style.pointerEvents = '';
+                categoryChooser.style.opacity = '';
+              }
+            }
+          });
+
+          composerObserver.observe(document.body, { childList: true, subtree: true });
+
+          api.onPageChange(() => {
+            composerObserver.disconnect();
+          });
+        });
       }
     });
   },
