@@ -97,7 +97,6 @@ export default {
         api.onPageChange((url) => {
           const composerObserver = new MutationObserver(() => {
             const categoryChooser = document.querySelector('.category-chooser');
-            const topicCreator = document.querySelector('#create-topic');
 
             if (categoryChooser) {
               if (url.includes("/c/")) {
@@ -106,14 +105,6 @@ export default {
               } else {
                 categoryChooser.style.pointerEvents = '';
                 categoryChooser.style.opacity = '';
-              }
-            }
-
-            if (topicCreator) {
-              if (url.includes("/c/")) {
-                topicCreator.style.display = '';
-              } else {
-                topicCreator.style.display = 'none';
               }
             }
           });
