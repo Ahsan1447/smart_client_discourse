@@ -1,4 +1,5 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
+import loadScript from 'discourse/lib/load-script';
 
 export default {
   name: "custom-js-injector",
@@ -7,9 +8,9 @@ export default {
     withPluginApi("0.8.7", (api) => {
 
       const customScriptContent = Discourse.SiteSettings.custom_js_code;
-      const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;    
+      const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;
 
-      document.addEventListener("DOMContentLoaded", function() {
+      document.addEventListener("DOMContentLoaded", function () {
         const menuHTML = `
           <div class="custom-menu">
               <a href="#">FORUMS</a>
@@ -31,7 +32,7 @@ export default {
 
       if (enableAdminSettings) {
 
-        // Array of registered script paths relative to Discourse assets URL
+        // Array of script paths relative to Discourse assets URL
         const scriptPaths = [
           "/assets/javascripts/isomorphic/system/modules/ISC_Core.js",
           "/assets/javascripts/isomorphic/system/modules/ISC_Foundation.js",
@@ -42,76 +43,50 @@ export default {
           "/assets/javascripts/isomorphic/skins/Tahoe/load_skin.js"
         ];
 
-        // Function to dynamically load scripts in order
-        function loadScriptsSequentially(scripts, callback) {
-          if (scripts.length === 0) {
-            callback();
-            return;
-          }
-
-          const src = scripts.shift(); // Remove the first script from the array
-          const scriptElement = document.createElement("script");
-          scriptElement.src = src; // Directly use the URL
-          scriptElement.async = false; // Ensure scripts are executed in order
-          scriptElement.type = "text/javascript";
-          scriptElement.setAttribute("data-no-strict", "true");
-
-          // Set nonce if available
-          const existingScript1 = document.querySelector("script[nonce]");
-          if (existingScript1) {
-            const nonce = existingScript1.getAttribute("nonce");
-            scriptElement.setAttribute("nonce", nonce);
-          }
-
-          // Load the script and proceed with the next one once done
-          scriptElement.onload = () => loadScriptsSequentially(scripts, callback);
-          scriptElement.onerror = (error) => {
-            console.error(`Error loading script: ${src}`, error);
-            loadScriptsSequentially(scripts, callback); // Continue loading the rest even if one fails
-          };
-          document.head.appendChild(scriptElement);
-        }
-
-        // Load the registered scripts dynamically in sequence
-        loadScriptsSequentially(scriptPaths.slice(), () => {      
-
-          // Inject custom script content if settings allow after all scripts are loaded
-          if (customScriptContent && enableAdminSettings) {
-            const scriptElement = document.createElement("script");
-            scriptElement.type = "text/javascript";
-            scriptElement.textContent = `(function() { ${customScriptContent} })();`;
-
-            // Add nonce if available
-            const existingScript = document.querySelector("script[nonce]");
-            if (existingScript) {
-              const nonce = existingScript.getAttribute("nonce");
-              scriptElement.setAttribute("nonce", nonce);
+        // Function to load scripts using Discourse's loadScript method
+        const loadScripts = async () => {
+          try {
+            for (const path of scriptPaths) {
+              await loadScript(path);
             }
 
-            document.head.appendChild(scriptElement);
+            // After all scripts are loaded, inject the custom script content
+            if (customScriptContent && enableAdminSettings) {
+              const scriptElement = document.createElement("script");
+              scriptElement.type = "text/javascript";
+              scriptElement.textContent = `(function() { ${customScriptContent} })();`;
 
-            if (typeof CLASS_NAME_LINKS === 'undefined' || typeof GLOBAL_CLASS_NAME_REGEX === 'undefined') {
-              return;
+              const existingScript = document.querySelector("script[nonce]");
+              if (existingScript) {
+                const nonce = existingScript.getAttribute("nonce");
+                scriptElement.setAttribute("nonce", nonce);
+              }
+
+              document.head.appendChild(scriptElement);
             }
+
+          } catch (error) {
+            console.error("Error loading scripts: ", error);
           }
-        });
-        
- 
+        };
+
+        // Load the scripts
+        loadScripts();
+
         function replaceWithLinks(text) {
           return text.replace(GLOBAL_CLASS_NAME_REGEX, (match, p1, className) => {
-            // Check if the captured className exists in CLASS_NAME_LINKS
             if (CLASS_NAME_LINKS.hasOwnProperty(className)) {
               return `${p1}[${className}](${CLASS_NAME_LINKS[className]})`;
             }
             return match;
           });
         }
-         // Use Discourse's plugin API to modify the composer save behavior
+
+        // Use Discourse's plugin API to modify the composer save behavior
         api.modifyClass("controller:composer", {
           save() {
             const content = this.get("model.reply");
             if (typeof GLOBAL_CLASS_NAME_REGEX !== 'undefined' && typeof CLASS_NAME_LINKS !== 'undefined') {
-
               const modifiedContent = replaceWithLinks(content);
               this.set("model.reply", modifiedContent);
             }
@@ -122,6 +97,7 @@ export default {
         api.onPageChange((url) => {
           const composerObserver = new MutationObserver(() => {
             const categoryChooser = document.querySelector('.category-chooser');
+            const topicCreator = document.querySelector('#create-topic');
 
             if (categoryChooser) {
               if (url.includes("/c/")) {
@@ -130,6 +106,14 @@ export default {
               } else {
                 categoryChooser.style.pointerEvents = '';
                 categoryChooser.style.opacity = '';
+              }
+            }
+
+            if (topicCreator) {
+              if (url.includes("/c/")) {
+                topicCreator.style.display = '';
+              } else {
+                topicCreator.style.display = 'none';
               }
             }
           });
