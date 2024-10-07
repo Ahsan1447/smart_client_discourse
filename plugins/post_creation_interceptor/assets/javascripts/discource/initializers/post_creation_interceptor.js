@@ -30,59 +30,36 @@ export default {
         }
       });
 
+      let CLASS_NAME_LINKS;
+      const GLOBAL_CLASS_NAME_REGEX = /\b[A-Z][a-zA-Z]*(?:\.[a-zA-Z]+)*\b/g;
+
+      loadScript("/assets/javascripts/docs.js").then(() => {
+        // Access the global isc.docItems object
+        const docItems = window.docItems;
+
+        if (docItems) {
+
+          CLASS_NAME_LINKS = createClassNameLinks(docItems);
+          
+          // You can now use `classNameLinks` in your logic or UI
+        } else {
+          console.error("Failed to load isc.docItems");
+        }
+      }).catch((error) => {
+        console.error("Error loading docs.js script:", error);
+      });
+
       if (enableAdminSettings) {
 
-        // Array of script paths relative to Discourse assets URL
-        const scriptPaths = [
-          "/assets/javascripts/isomorphic/system/modules/ISC_Core.js",
-          "/assets/javascripts/isomorphic/system/modules/ISC_Foundation.js",
-          "/assets/javascripts/isomorphic/system/modules/ISC_Containers.js",
-          "/assets/javascripts/isomorphic/system/modules/ISC_Grids.js",
-          "/assets/javascripts/isomorphic/system/modules/ISC_Forms.js",
-          "/assets/javascripts/isomorphic/system/modules/ISC_DataBinding.js",
-          "/assets/javascripts/isomorphic/skins/Tahoe/load_skin.js"
-        ];
-
-        // Function to load scripts using Discourse's loadScript method
-        const loadScripts = async () => {
-          try {
-            for (const path of scriptPaths) {
-              await loadScript(path);
-            }
-
-            // After all scripts are loaded, inject the custom script content
-            if (customScriptContent && enableAdminSettings) {
-              const scriptElement = document.createElement("script");
-              scriptElement.type = "text/javascript";
-              scriptElement.textContent = `(function() { ${customScriptContent} })();`;
-
-              const existingScript = document.querySelector("script[nonce]");
-              if (existingScript) {
-                const nonce = existingScript.getAttribute("nonce");
-                scriptElement.setAttribute("nonce", nonce);
-              }
-
-              document.head.appendChild(scriptElement);
-            }
-
-          } catch (error) {
-            console.error("Error loading scripts: ", error);
-          }
-        };
-
-        // Load the scripts
-        loadScripts();
 
         function replaceWithLinks(text) {
-          return text.replace(GLOBAL_CLASS_NAME_REGEX, (match, p1, className) => {
-            if (CLASS_NAME_LINKS.hasOwnProperty(className)) {
-              return `${p1}[${className}](${CLASS_NAME_LINKS[className]})`;
+          return text.replace(GLOBAL_CLASS_NAME_REGEX, (match) => {
+            if (CLASS_NAME_LINKS.hasOwnProperty(match)) {
+              return `<a href="${CLASS_NAME_LINKS[match]}" target="_blank">${match}</a>`;
             }
             return match;
           });
         }
-
-        // Use Discourse's plugin API to modify the composer save behavior
         api.modifyClass("controller:composer", {
           save() {
             const content = this.get("model.reply");
@@ -119,3 +96,34 @@ export default {
     });
   },
 };
+
+function createClassNameLinks(docItems) {
+  const CLASS_NAME_LINKS = {};
+  const BASE_URL = "https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=";
+  Object.keys(docItems).forEach((key) => {
+    const item = docItems[key];
+    if (item.ref && key) {
+      const className = key.split(":").slice(1); 
+      const definingClass = item.ref.replace(":", "..");
+      CLASS_NAME_LINKS[className] = `${BASE_URL}${definingClass}`;
+    }
+  });
+
+  return CLASS_NAME_LINKS;
+}
+
+
+  // After all scripts are loaded, inject the custom script content
+  // if (customScriptContent && enableAdminSettings) {
+  //   const scriptElement = document.createElement("script");
+  //   scriptElement.type = "text/javascript";
+  //   scriptElement.textContent = `(function() { ${customScriptContent} })();`;
+
+  //   const existingScript = document.querySelector("script[nonce]");
+  //   if (existingScript) {
+  //     const nonce = existingScript.getAttribute("nonce");
+  //     scriptElement.setAttribute("nonce", nonce);
+  //   }
+
+  //   document.head.appendChild(scriptElement);
+  // }
