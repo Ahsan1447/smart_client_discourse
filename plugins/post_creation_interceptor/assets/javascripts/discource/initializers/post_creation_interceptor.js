@@ -7,8 +7,25 @@ export default {
   initialize() {
     withPluginApi("0.8.7", (api) => {
 
+      console.log("hello from ISC", isc);
+      console.log("ISC button: ", isc.IButton); 
+
       const customScriptContent = Discourse.SiteSettings.custom_js_code;
       const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;
+
+      //custom js code execution.
+
+      if (customScriptContent && enableAdminSettings) {
+        const scriptElement = document.createElement("script");
+        scriptElement.type = "text/javascript";
+        scriptElement.textContent = `(function() { ${customScriptContent} })();`;
+        const existingScript = document.querySelector("script[nonce]");
+        if (existingScript) {
+          const nonce = existingScript.getAttribute("nonce");                              
+          scriptElement.setAttribute("nonce", nonce);
+        }
+        document.head.appendChild(scriptElement);
+      }
 
       document.addEventListener("DOMContentLoaded", function () {
         const menuHTML = `
@@ -40,6 +57,7 @@ export default {
         if (docItems) {
 
           CLASS_NAME_LINKS = createClassNameLinks(docItems);
+          console.log(CLASS_NAME_LINKS);
           
           // You can now use `classNameLinks` in your logic or UI
         } else {
@@ -113,17 +131,3 @@ function createClassNameLinks(docItems) {
 }
 
 
-  // After all scripts are loaded, inject the custom script content
-  // if (customScriptContent && enableAdminSettings) {
-  //   const scriptElement = document.createElement("script");
-  //   scriptElement.type = "text/javascript";
-  //   scriptElement.textContent = `(function() { ${customScriptContent} })();`;
-
-  //   const existingScript = document.querySelector("script[nonce]");
-  //   if (existingScript) {
-  //     const nonce = existingScript.getAttribute("nonce");
-  //     scriptElement.setAttribute("nonce", nonce);
-  //   }
-
-  //   document.head.appendChild(scriptElement);
-  // }

@@ -8,9 +8,16 @@
 
 enabled_site_setting :enable_admin_settings
 
-# register_asset "javascripts/smartclient-eval-loader.js"
 
-after_initialize do
+register_asset "smartclientSDK/isomorphic/system/modules/ISC_Core.js"
+register_asset "smartclientSDK/isomorphic/system/modules/ISC_Foundation.js"
+register_asset "smartclientSDK/isomorphic/system/modules/ISC_Containers.js"
+register_asset "smartclientSDK/isomorphic/system/modules/ISC_Grids.js"
+register_asset "smartclientSDK/isomorphic/system/modules/ISC_Forms.js"
+register_asset "smartclientSDK/isomorphic/system/modules/ISC_DataBinding.js"
+register_asset "smartclientSDK/isomorphic/skins/Tahoe/load_skin.js"
+
+ after_initialize do
     if SiteSetting.enable_admin_settings
       
       script = SiteSetting.custom_js_code

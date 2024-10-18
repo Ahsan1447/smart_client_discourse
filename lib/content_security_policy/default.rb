@@ -60,7 +60,8 @@ class ContentSecurityPolicy
     end
 
     def script_src
-      sources = ["'strict-dynamic'"]
+      # sources = ["'strict-dynamic'"]
+      sources = ["'strict-dynamic'", "'unsafe-eval'"]
       sources << :report_sample if SiteSetting.content_security_policy_collect_reports
 
       sources
