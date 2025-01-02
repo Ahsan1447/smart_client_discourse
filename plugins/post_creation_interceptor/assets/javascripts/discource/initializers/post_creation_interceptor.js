@@ -7,13 +7,49 @@ export default {
   initialize() {
     withPluginApi("0.8.7", (api) => {
 
-      console.log("hello from ISC", isc);
-      console.log("ISC button: ", isc.IButton); 
+      api.onPageChange((url) => {
+        // if (url.startsWith("/t/")) {
+          // Create iframe if not already present
+          if (!document.querySelector("#offscreen-iframe")) {
+            const iframe = document.createElement("iframe");
+            iframe.src = "/assets/smartclient_iframe.html";
+            iframe.width = "1px";
+            iframe.height = "1px";
+            iframe.style.position = "absolute";
+            iframe.style.left = "-9999px";  // Offscreen
+            iframe.id = "offscreen-iframe";
+  
+            document.body.appendChild(iframe);
+
+            iframe.onload = function () {
+              try {
+                // Try to access the isc object directly from the iframe's contentWindow
+                const isc = iframe.contentWindow.isc;
+                if (isc) {
+                  console.log("SmartClient is available:", isc);
+                  console.log("button: ", isc.IButton);
+                  // You can now interact with isc, e.g., isc.IButton
+                }
+              } catch (e) {
+                console.error("Error accessing isc in iframe:", e);
+              }
+            };
+  
+            // Listen for communication from iframe
+            // window.addEventListener("message", (event) => {
+            //   if (event.data.type === "frameworkReady") {
+            //     console.log("SmartClient loaded in offscreen iframe.");
+            //     console.log("ss: ", event.data.framework);
+            //   }
+            // });
+          }
+        // }
+      });
 
       const customScriptContent = Discourse.SiteSettings.custom_js_code;
       const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;
 
-      //custom js code execution.
+      // //custom js code execution.
 
       if (customScriptContent && enableAdminSettings) {
         const scriptElement = document.createElement("script");
@@ -21,7 +57,7 @@ export default {
         scriptElement.textContent = `(function() { ${customScriptContent} })();`;
         const existingScript = document.querySelector("script[nonce]");
         if (existingScript) {
-          const nonce = existingScript.getAttribute("nonce");                              
+          const nonce = existingScript.getAttribute("nonce");
           scriptElement.setAttribute("nonce", nonce);
         }
         document.head.appendChild(scriptElement);
