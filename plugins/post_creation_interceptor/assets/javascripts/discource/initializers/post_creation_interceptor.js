@@ -9,39 +9,29 @@ export default {
 
       api.onPageChange((url) => {
         // if (url.startsWith("/t/")) {
-          // Create iframe if not already present
+                // open smartlcient framework in offscreen iframe
           if (!document.querySelector("#offscreen-iframe")) {
             const iframe = document.createElement("iframe");
             iframe.src = "/assets/smartclient_iframe.html";
             iframe.width = "1px";
             iframe.height = "1px";
             iframe.style.position = "absolute";
-            iframe.style.left = "-9999px";  // Offscreen
+            iframe.style.left = "-9999px";
             iframe.id = "offscreen-iframe";
   
             document.body.appendChild(iframe);
 
             iframe.onload = function () {
               try {
-                // Try to access the isc object directly from the iframe's contentWindow
                 const isc = iframe.contentWindow.isc;
                 if (isc) {
                   console.log("SmartClient is available:", isc);
                   console.log("button: ", isc.IButton);
-                  // You can now interact with isc, e.g., isc.IButton
                 }
               } catch (e) {
-                console.error("Error accessing isc in iframe:", e);
+                console.error("Error accessing smartclient in iframe:", e);
               }
             };
-  
-            // Listen for communication from iframe
-            // window.addEventListener("message", (event) => {
-            //   if (event.data.type === "frameworkReady") {
-            //     console.log("SmartClient loaded in offscreen iframe.");
-            //     console.log("ss: ", event.data.framework);
-            //   }
-            // });
           }
         // }
       });
@@ -49,7 +39,7 @@ export default {
       const customScriptContent = Discourse.SiteSettings.custom_js_code;
       const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;
 
-      // //custom js code execution.
+      //custom js code execution
 
       if (customScriptContent && enableAdminSettings) {
         const scriptElement = document.createElement("script");
@@ -62,6 +52,8 @@ export default {
         }
         document.head.appendChild(scriptElement);
       }
+
+      //menu links
 
       document.addEventListener("DOMContentLoaded", function () {
         const menuHTML = `
@@ -83,52 +75,14 @@ export default {
         }
       });
 
-      let CLASS_NAME_LINKS;
-      const GLOBAL_CLASS_NAME_REGEX = /\b[A-Z][a-zA-Z]*(?:\.[a-zA-Z]+)*\b/g;
+      //grey out categories
 
-      loadScript("/assets/javascripts/docs.js").then(() => {
-        // Access the global isc.docItems object
-        const docItems = window.docItems;
-
-        if (docItems) {
-
-          CLASS_NAME_LINKS = createClassNameLinks(docItems);
-          console.log(CLASS_NAME_LINKS);
-          
-          // You can now use `classNameLinks` in your logic or UI
-        } else {
-          console.error("Failed to load isc.docItems");
-        }
-      }).catch((error) => {
-        console.error("Error loading docs.js script:", error);
-      });
-
-      if (enableAdminSettings) {
-
-
-        function replaceWithLinks(text) {
-          return text.replace(GLOBAL_CLASS_NAME_REGEX, (match) => {
-            if (CLASS_NAME_LINKS.hasOwnProperty(match)) {
-              return `<a href="${CLASS_NAME_LINKS[match]}" target="_blank">${match}</a>`;
-            }
-            return match;
-          });
-        }
-        api.modifyClass("controller:composer", {
-          save() {
-            const content = this.get("model.reply");
-            if (typeof GLOBAL_CLASS_NAME_REGEX !== 'undefined' && typeof CLASS_NAME_LINKS !== 'undefined') {
-              const modifiedContent = replaceWithLinks(content);
-              this.set("model.reply", modifiedContent);
-            }
-            this._super(...arguments);  // Call the original save function
-          }
-        });
+      if(enableAdminSettings){
 
         api.onPageChange((url) => {
           const composerObserver = new MutationObserver(() => {
             const categoryChooser = document.querySelector('.category-chooser');
-
+  
             if (categoryChooser) {
               if (url.includes("/c/")) {
                 categoryChooser.style.pointerEvents = 'none';
@@ -139,31 +93,68 @@ export default {
               }
             }
           });
-
           composerObserver.observe(document.body, { childList: true, subtree: true });
-
           api.onPageChange(() => {
             composerObserver.disconnect();
           });
+        });
+      }
+      //transformation logic
+
+      let transforms;
+      const regexFilter = /\b[A-Z][a-zA-Z]*(?:\.[a-zA-Z]+)*\b/g;
+
+ 
+      loadScript("/assets/javascripts/docs.js").then(() => {
+        const docItems = window.docItems; 
+
+        if (docItems) { //all doctitems (docs.js)
+
+          transforms = createTransformations(docItems);
+          console.log(transforms);
+        } else {
+          console.error("Failed to fetch doc items");
+        }
+      }).catch((error) => {
+        console.error("Error loading docs.js file", error);
+      });
+
+      if (enableAdminSettings) { //if plugin is enabled
+
+        function doc_keyword_transform(message) {
+          return message.replace(regexFilter, (match) => {
+            if (transforms.hasOwnProperty(match)) {
+              return `<a href="${transforms[match]}" target="_blank">${match}</a>`;
+            }
+            return match;
+          });
+        }
+        api.modifyClass("controller:composer", {
+          save() {
+            const message = this.get("model.reply");
+            if (typeof regexFilter !== 'undefined' && typeof transforms !== 'undefined') {
+              const updated_message = doc_keyword_transform(message);
+              this.set("model.reply", updated_message);
+            }
+            this._super(...arguments);
+          }
         });
       }
     });
   },
 };
 
-function createClassNameLinks(docItems) {
-  const CLASS_NAME_LINKS = {};
+function createTransformations(docItems) {
+  const transforms = {};
   const BASE_URL = "https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=";
   Object.keys(docItems).forEach((key) => {
     const item = docItems[key];
     if (item.ref && key) {
       const className = key.split(":").slice(1); 
       const definingClass = item.ref.replace(":", "..");
-      CLASS_NAME_LINKS[className] = `${BASE_URL}${definingClass}`;
-    }
+      transforms[className] = `${BASE_URL}${definingClass}`;
+    }               
   });
 
-  return CLASS_NAME_LINKS;
+  return transforms;
 }
-
-
