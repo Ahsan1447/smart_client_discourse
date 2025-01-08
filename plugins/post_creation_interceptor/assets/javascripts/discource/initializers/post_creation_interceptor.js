@@ -189,8 +189,7 @@ export default {
 function createTransformations(docItems) {
   const transforms = {};
   const BASE_URL = "https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=";
-  Object.keys(docItems).forEach((key)
- => {
+  Object.keys(docItems).forEach((key) => {
     const item = docItems[key];
     if (item.ref && key) {
       const className = key.split(":").slice(1); 
