@@ -22,19 +22,60 @@ export default {
             document.body.appendChild(iframe);
 
             iframe.onload = function () {
-              try {
-                const isc = iframe.contentWindow.isc;
-                if (isc) {
-                  console.log("SmartClient is available:", isc);
-                  console.log("button: ", isc.IButton);
-                }
-              } catch (e) {
-                console.error("Error accessing smartclient in iframe:", e);
+
+              const iframeWindow = iframe.contentWindow;
+
+              // Dynamically inject SmartClient scripts
+              const scripts = [
+                  "/assets/smartclientSDK/isomorphic/system/modules/ISC_Core.js",
+                  "/assets/smartclientSDK/isomorphic/system/modules/ISC_Foundation.js",
+                  "/assets/smartclientSDK/isomorphic/system/modules/ISC_Containers.js",
+                  "/assets/smartclientSDK/isomorphic/system/modules/ISC_Grids.js",
+                  "/assets/smartclientSDK/isomorphic/system/modules/ISC_Forms.js",
+                  "/assets/smartclientSDK/isomorphic/system/modules/ISC_DataBinding.js"
+              ];
+
+              let loadedScripts = 0;
+
+              // Function to check SmartClient availability
+              function checkSmartClient() {
+                  try {
+                      const isc = iframe.contentWindow.isc;
+                      if (isc) {
+                          console.log("SmartClient is available:", isc);
+                          console.log("button: ", isc.IButton);
+                      } else {
+                          console.warn("SmartClient framework not ready.");
+                      }
+                  } catch (e) {
+                      console.error("Error accessing isc in iframe:", e);
+                  }
               }
+              scripts.forEach((src) => {
+                const script = iframeWindow.document.createElement("script");
+                script.src = src;
+                script.async = false;
+        
+                script.onload = function () {
+                    loadedScripts++;
+        
+                    // Check after the last script is loaded
+                    if (loadedScripts === scripts.length) {
+                        checkSmartClient();
+                    }
+                };
+        
+                script.onerror = function () {
+                    console.error(`Failed to load script: ${src}`);
+                };
+        
+                iframeWindow.document.head.appendChild(script);
+            });
             };
           }
         // }
       });
+
 
       const customScriptContent = Discourse.SiteSettings.custom_js_code;
       const enableAdminSettings = Discourse.SiteSettings.enable_admin_settings;
@@ -77,28 +118,28 @@ export default {
 
       //grey out categories
 
-      if(enableAdminSettings){
+      api.onPageChange((url) => {
+        const composerObserver = new MutationObserver(() => {
+          const categoryChooser = document.querySelector('.category-chooser');
 
-        api.onPageChange((url) => {
-          const composerObserver = new MutationObserver(() => {
-            const categoryChooser = document.querySelector('.category-chooser');
-  
-            if (categoryChooser) {
-              if (url.includes("/c/")) {
-                categoryChooser.style.pointerEvents = 'none';
-                categoryChooser.style.opacity = '0.5';
-              } else {
-                categoryChooser.style.pointerEvents = '';
-                categoryChooser.style.opacity = '';
-              }
+          if (categoryChooser) {
+            if (url.includes("/c/")) {
+              categoryChooser.style.pointerEvents = 'none';
+              categoryChooser.style.opacity = '0.5';
+            } else {
+              categoryChooser.style.pointerEvents = '';
+              categoryChooser.style.opacity = '';
             }
-          });
-          composerObserver.observe(document.body, { childList: true, subtree: true });
-          api.onPageChange(() => {
-            composerObserver.disconnect();
-          });
+          }
         });
-      }
+
+        composerObserver.observe(document.body, { childList: true, subtree: true });
+
+        api.onPageChange(() => {
+          composerObserver.disconnect();
+        });
+      });
+
       //transformation logic
 
       let transforms;
@@ -120,6 +161,7 @@ export default {
       });
 
       if (enableAdminSettings) { //if plugin is enabled
+
 
         function doc_keyword_transform(message) {
           return message.replace(regexFilter, (match) => {
@@ -147,7 +189,8 @@ export default {
 function createTransformations(docItems) {
   const transforms = {};
   const BASE_URL = "https://smartclient.com/smartclient-release/isomorphic/system/reference/?id=";
-  Object.keys(docItems).forEach((key) => {
+  Object.keys(docItems).forEach((key)
+ => {
     const item = docItems[key];
     if (item.ref && key) {
       const className = key.split(":").slice(1); 
