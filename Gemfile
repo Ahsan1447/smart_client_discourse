@@ -134,9 +134,9 @@ end
 #   gem "minio_runner", require: false
 # end
 
-# group :test, :development do
+group :test, :development do
 #   gem "rspec"
-#   gem "listen", require: false
+  gem "listen", require: false
 #   gem "certified", require: false
 #   gem "fabrication", require: false
 #   gem "mocha", require: false
@@ -158,7 +158,7 @@ end
 
 #   gem "syntax_tree"
 #   gem "syntax_tree-disable_ternary"
-# end
+end
 
 # group :development do
 #   gem "ruby-prof", require: false, platform: :mri
