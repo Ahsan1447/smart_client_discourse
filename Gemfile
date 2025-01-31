@@ -122,61 +122,61 @@ group :assets do
   gem "uglifier"
 end
 
-group :test do
-  gem "capybara", require: false
-  gem "webmock", require: false
-  gem "fakeweb", require: false
-  gem "simplecov", require: false
-  gem "selenium-webdriver", "~> 4.14", require: false
-  gem "selenium-devtools", require: false
-  gem "test-prof"
-  gem "rails-dom-testing", require: false
-  gem "minio_runner", require: false
-end
+# group :test do
+#   gem "capybara", require: false
+#   gem "webmock", require: false
+#   gem "fakeweb", require: false
+#   gem "simplecov", require: false
+#   gem "selenium-webdriver", "~> 4.14", require: false
+#   gem "selenium-devtools", require: false
+#   gem "test-prof"
+#   gem "rails-dom-testing", require: false
+#   gem "minio_runner", require: false
+# end
 
-group :test, :development do
-  gem "rspec"
-  gem "listen", require: false
-  gem "certified", require: false
-  gem "fabrication", require: false
-  gem "mocha", require: false
+# group :test, :development do
+#   gem "rspec"
+#   gem "listen", require: false
+#   gem "certified", require: false
+#   gem "fabrication", require: false
+#   gem "mocha", require: false
 
-  gem "rb-fsevent", require: RUBY_PLATFORM =~ /darwin/i ? "rb-fsevent" : false
+#   gem "rb-fsevent", require: RUBY_PLATFORM =~ /darwin/i ? "rb-fsevent" : false
 
-  gem "rspec-rails"
+#   gem "rspec-rails"
 
-  gem "shoulda-matchers", require: false
-  gem "rspec-html-matchers"
-  gem "pry-stack_explorer", require: false
-  gem "byebug", require: ENV["RM_INFO"].nil?, platform: :mri
-  gem "rubocop-discourse", require: false
-  gem "parallel_tests"
+#   gem "shoulda-matchers", require: false
+#   gem "rspec-html-matchers"
+#   gem "pry-stack_explorer", require: false
+#   gem "byebug", require: ENV["RM_INFO"].nil?, platform: :mri
+#   gem "rubocop-discourse", require: false
+#   gem "parallel_tests"
 
-  gem "rswag-specs"
+#   gem "rswag-specs"
 
-  gem "annotate"
+#   gem "annotate"
 
-  gem "syntax_tree"
-  gem "syntax_tree-disable_ternary"
-end
+#   gem "syntax_tree"
+#   gem "syntax_tree-disable_ternary"
+# end
 
-group :development do
-  gem "ruby-prof", require: false, platform: :mri
-  gem "bullet", require: !!ENV["BULLET"]
-  gem "better_errors", platform: :mri, require: !!ENV["BETTER_ERRORS"]
-  gem "binding_of_caller"
-  gem "yaml-lint"
-  gem "yard"
-end
+# group :development do
+#   gem "ruby-prof", require: false, platform: :mri
+#   gem "bullet", require: !!ENV["BULLET"]
+#   gem "better_errors", platform: :mri, require: !!ENV["BETTER_ERRORS"]
+#   gem "binding_of_caller"
+#   gem "yaml-lint"
+#   gem "yard"
+# end
 
 if ENV["ALLOW_DEV_POPULATE"] == "1"
   gem "discourse_dev_assets"
   gem "faker", "~> 2.16"
-else
-  group :development, :test do
-    gem "discourse_dev_assets"
-    gem "faker", "~> 2.16"
-  end
+# else
+#   group :development, :test do
+#     gem "discourse_dev_assets"
+#     gem "faker", "~> 2.16"
+#   end
 end
 
 # this is an optional gem, it provides a high performance replacement
